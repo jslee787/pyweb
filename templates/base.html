@@ -7,8 +7,14 @@
     <link rel="stylesheet" href="{% static 'board/css/bootstrap.css' %}">
 </head>
 <body>
+{% include 'navbar.html' %}
+<!-- 기본 템플릿 안에 삽입될 내용 start -->
 {% block content %}
-
+{% endblock %}
+<!-- 기본 템플릿 안에 삽입될 내용 end -->
+<script src="{% static 'board/js/jquery-3.6.0.js' %}"></script>
+<script src="{% static 'board/js/bootstrap.js' %}"></script>
+{% block script %}
 {% endblock %}
 </body>
 </html>
