@@ -8,6 +8,9 @@ from board.models import Question, Answer
 from board.forms import QuestionForm, AnswerForm
 
 def index(request):
+    return render(request, 'board/index.html')
+
+def boardlist(request):
     #질문 목록
     #question_list = Question.objects.all()  #db 전체조회
     question_list = Question.objects.order_by('-create_date')
