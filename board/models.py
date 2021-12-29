@@ -28,7 +28,7 @@ class Comment(models.Model):
     content = models.TextField()            #댓글 내용
     create_date = models.DateTimeField()    #댓글 작성일
     modify_date = models.DateTimeField(null=True, blank=True)
-    question = models.ForeignKey(Question, null=True, blank=True,
+    question = models.ForeignKey(Question, null=True, blank=True,   #질문댓글
                                  on_delete=models.CASCADE)
-    answer = models.ForeignKey(Answer, null=True, blank=True,
+    answer = models.ForeignKey(Answer, null=True, blank=True,       #답변댓글
                                  on_delete=models.CASCADE)

@@ -6,8 +6,9 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
-from board.models import Question, Answer
-from board.forms import QuestionForm, AnswerForm
+from board.models import Question, Answer, Comment
+from board.forms import QuestionForm, AnswerForm, CommentForm
+
 
 def index(request):
     return render(request, 'board/index.html')
@@ -122,3 +123,21 @@ def vote_question(request, question_id):
     else:
         question.voter.add(request.user)
     return redirect('board:detail', question_id=question.id)
+
+@login_required(login_url='common:login')
+def comment_create_question(request, question_id):
+    #질문 댓글 등록
+    question = get_object_or_404(Question, pk=question_id)
+    if request.method == "POST":
+        form = CommentForm(request.POST)    #입력된 댓글 내용
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.author = request.user   #세션 권한
+            comment.create_date = timezone.now()
+            comment.question = question     #참조 외래키
+            comment.save()
+            return redirect('board:detail', question_id=question.id)
+    else:   #GET은 빈 폼을 가져옴
+        form = CommentForm()
+    context = {'form':form}
+    return render(request, 'board/comment_form.html', context)
