@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
@@ -16,16 +17,25 @@ def index(request):
 def boardlist(request):
     #질문 목록
     #question_list = Question.objects.all()  #db 전체조회
-    question_list = Question.objects.order_by('-create_date')
-    #작성일 기준 내림차순(- 기호 사용)
 
-    #페이지 처리
-    page = request.GET.get('page', 1)   #127.0.0.1:8000/ 기본 1페이지
+    page = request.GET.get('page', 1)   #페이지 처리, 127.0.0.1:8000/ 기본 1페이지
+    kw = request.GET.get('kw', '')      #검색어 가져오기
+
+    #조회
+    question_list = Question.objects.order_by('-create_date') # 작성일 기준 내림차순(- 기호 사용)
+    if kw:
+        question_list = question_list.filter(
+            Q(subject__icontains=kw) |  #제목 검색
+            Q(content__icontains=kw) |  #내용 검색
+            Q(author__username__icontains=kw) |  #유저 검색
+            Q(answer__author__username__icontains=kw)    #답변 유저 검색
+        ).distinct()
+
     paginator = Paginator(question_list, 10)    #페이지당 10개씩 설정
     page_obj = paginator.get_page(page)     #페이지 가져오기
+    context = {'question_list':page_obj, 'page':page, 'kw':kw}
+    return render(request, 'board/question_list.html', context)
 
-    return render(request, 'board/question_list.html', {'question_list':page_obj})
-    #return HttpResponse("pyweb 사이트 입니다.")
 
 def detail(request, question_id):
     # 질문/답변 상세
@@ -44,7 +54,7 @@ def question_create(request):
             question.create_date = timezone.now() #날짜 시간 저장
             question.author = request.user      #글쓴이에 세션 저장
             question.save()  #실제 저장
-            return redirect('board:index') #이동할 경로(앱 네임사용) 저장
+            return redirect('board:boardlist') #이동할 경로(앱 네임사용) 저장
     else:
         form = QuestionForm()   #form 객체 생성
     return render(request, 'board/question_form.html', {'form':form})
